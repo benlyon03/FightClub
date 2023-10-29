@@ -126,6 +126,10 @@ def organize_data(main_dir, nv_dir, v_dir, split, nv_v_split):
   shutil.rmtree(v_dir)
 
 
+#Add data folder if does not exist
+if not os.path.exists('Data'):
+  os.makedirs('Data')
+
 #Move archive.zip to Data
 shutil.move('archive.zip', 'Data')
 extract_from_zip_path('Data')
