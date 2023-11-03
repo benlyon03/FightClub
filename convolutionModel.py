@@ -12,15 +12,17 @@ import remotezip as rz
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-
 import tensorflow as tf
 import keras
 from keras import layers
 
+print('Tensorflow Version: ', tf.__version__)
+#print(keras.__version__)
+
 subset_paths = {}
-subset_paths['train'] = Path('./Data/train')
-subset_paths['test'] = Path('./Data/test')
-subset_paths['val'] = Path('./Data/val')
+subset_paths['train'] = Path(r'C:\Users\2alex\CSC480\train')
+subset_paths['test'] = Path(r'C:\Users\2alex\CSC480\test')
+subset_paths['val'] = Path(r'C:\Users\2alex\CSC480\val')
 
 # Define the dimensions of one frame in the set of frames created
 HEIGHT = 224
@@ -121,6 +123,25 @@ class FrameGenerator:
       label = self.class_ids_for_name[name] # Encode labels
       yield video_frames, label
 
+n_frames = 10
+batch_size = 8
+
+output_signature = (tf.TensorSpec(shape = (None, None, None, 3), dtype = tf.float32),
+                    tf.TensorSpec(shape = (), dtype = tf.int16))
+# Create training set
+train_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['train'], n_frames, training=True),
+                                          output_signature = output_signature)
+
+# Batch the data
+train_ds = train_ds.batch(batch_size)
+
+val_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['val'], n_frames),
+                                        output_signature = output_signature)
+val_ds = val_ds.batch(batch_size)
+
+test_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['test'], n_frames),
+                                         output_signature = output_signature)
+test_ds = test_ds.batch(batch_size)
 
 class Conv2Plus1D(keras.layers.Layer):
     def __init__(self, filters, kernel_size, padding):
@@ -257,19 +278,6 @@ x = layers.Flatten()(x)
 x = layers.Dense(10)(x)
 
 model = keras.Model(input, x)
-
-# Create the training set
-output_signature = (tf.TensorSpec(shape=(None, None, None, 3), dtype=tf.float32),                    tf.TensorSpec(shape=(), dtype=tf.int16))
-train_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['train'], 8, training=True),                                        output_signature=output_signature)
-
-# Create the validation set
-val_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['val'], 8),
-                                        output_signature=output_signature)
-
-# create the test set
-test_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['test'], 8),
-                                         output_signature=output_signature)
-
 
 frames, label = next(iter(train_ds))
 model.build(frames)
