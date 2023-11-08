@@ -16,8 +16,7 @@ import tensorflow as tf
 import keras
 from keras import layers
 
-print('Tensorflow Version: ', tf.__version__)
-#print(keras.__version__)
+#print('Tensorflow Version: ', tf.__version__)
 
 subset_paths = {}
 subset_paths['train'] = Path(r'C:\Users\2alex\CSC480\train')
@@ -106,7 +105,7 @@ class FrameGenerator:
     self.class_ids_for_name = dict((name, idx) for idx, name in enumerate(self.class_names))
 
   def get_files_and_class_names(self):
-    video_paths = list(self.path.glob('*/*.avi'))
+    video_paths = list(self.path.glob('*/*.mp4'))
     classes = [p.parent.name for p in video_paths] 
     return video_paths, classes
 
@@ -283,7 +282,7 @@ frames, label = next(iter(train_ds))
 model.build(frames)
 
 # Visualize the model
-keras.utils.plot_model(model, expand_nested=True, dpi=60, show_shapes=True)
+# keras.utils.plot_model(model, expand_nested=True, dpi=60, show_shapes=True)
 
 model.compile(loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True), 
               optimizer = keras.optimizers.Adam(learning_rate = 0.0001), 
@@ -292,6 +291,7 @@ model.compile(loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True
 history = model.fit(x = train_ds,
                     epochs = 50, 
                     validation_data = val_ds)
+
 
 
 def plot_history(history):
