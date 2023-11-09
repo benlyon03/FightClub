@@ -216,7 +216,7 @@ tuner = RandomSearch(
 callbacks = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)]
 
 # Start the tuning process
-tuner.search(x=train_ds, epochs=50, validation_data=(val_ds), callbacks=callbacks)
+tuner.search(x=train_ds, epochs=20, validation_data=(val_ds), callbacks=callbacks)
 
 # Get the best hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
@@ -225,7 +225,7 @@ print(best_hps)
 
 # Build and compile the final model with the best hyperparameters
 best_model = tuner.hypermodel.build(best_hps)
-best_model.compile(optimizer=best_hps['optimizer'], loss='binary_crossentropy', metrics=['accuracy'])
+best_model.compile(optimizer=best_hps['optimizer'], loss='binary_crossentropy', metrics=['recall'])
 # using metrics : precison, recall, f1. use f1
 # Train the final model
 best_model.fit(x=train_ds, epochs=10, validation_data=(val_ds, val_labels))
