@@ -135,8 +135,6 @@ class FrameGenerator:
 output_signature = (tf.TensorSpec(shape=(None, None, None, 3), dtype=tf.float32),                    tf.TensorSpec(shape=(), dtype=tf.int16))
 train_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['train'], 6, training=True),                                        output_signature=output_signature)
 
-
-
 # Create the validation set
 val_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['val'], 6),
                                         output_signature=output_signature)
@@ -199,12 +197,14 @@ def build_model(hp):
         epsilon=hp.Float('epsilon', min_value=1e-10, max_value=1e-7)
     )
 
-    model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+    # loss can also be Hinge
+    model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['recall'])
     return model
 
 # Initialize the tuner
 tuner = RandomSearch(
     build_model,
+    # understand 'objective' should be converted to binary
     objective='val_accuracy',
     max_trials=10,  # Adjust the number of trials as needed
     directory='my_tuning_directory'  # Choose a directory for saving tuning results
@@ -229,26 +229,3 @@ best_model.compile(optimizer=best_hps['optimizer'], loss='binary_crossentropy', 
 # using metrics : precison, recall, f1. use f1
 # Train the final model
 best_model.fit(x=train_ds, epochs=10, validation_data=(val_ds, val_labels))
-
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(
-                  from_logits=True),
-              metrics=['accuracy'])
-
-model.fit(train_ds,
-          epochs=10,
-          validation_data=val_ds,
-          callbacks=tf.keras.callbacks.EarlyStopping(patience=2, monitor='val_loss'))
-
-test_ds = tf.data.Dataset.from_generator(FrameGenerator(subset_paths['test'], 6),
-                                         output_signature=output_signature)
-
-test_ds = test_ds.batch(2)
-
-test_loss, test_accuracy = model.evaluate(test_ds)
-
-model.save('gfgModel.h5')
-
-print("Test Loss:", test_loss)
-print("Test Accuracy:", test_accuracy)
-print(model.summary())
