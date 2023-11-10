@@ -76,7 +76,9 @@ def frames_from_video_file(fight_path, n_frames, output_size=(224, 224), frame_s
 def numToVal(num):
     if num == 0:
         return 'Non Violent Video'
-    return 'Violent Video'
+    elif num == 1:
+        return 'Violent Video'
+    return 'Some Very Wrong Is Happening'
 
 
 # predicting whether the fight video is violent
