@@ -183,7 +183,8 @@ model = tf.keras.Sequential([
     tf.keras.layers.Rescaling(scale=255),
     tf.keras.layers.TimeDistributed(net),
     tf.keras.layers.Dense(10),
-    tf.keras.layers.GlobalAveragePooling3D()
+    tf.keras.layers.GlobalAveragePooling3D(),
+    tf.keras.layers.Dense(1, activation='sigmoid')
 ])
 
 model.compile(optimizer='adam',
