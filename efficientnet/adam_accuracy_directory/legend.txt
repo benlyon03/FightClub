@@ -1,0 +1,2 @@
+Brick: Training Set
+Blue: Validation Set

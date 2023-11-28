@@ -1,0 +1,3 @@
+short_dance.mp4 0
+short_fight.mp4 1
+fight.mp4 1
