@@ -3,6 +3,11 @@ import numpy as np
 import tensorflow as tf
 import random
 import time
+import sys
+sys.path.append('mmAction/mmaction2/')
+from mmaction.apis import init_recognizer, inference_recognizer
+import os
+import sklearn.metrics as metrics
 
 def format_frames(frame, output_size):
     """
@@ -158,7 +163,7 @@ def convert_avi_to_mp4(avi_path, mp4_path, fps=30):
 if __name__ == "__main__":
     # Set the output video path and recording duration
     output_avi_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\liveVideo.avi'
-    output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\nofight.mp4'
+    output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\dance.mp4'
     recording_duration = 4  # in seconds
 
     # Start recording
@@ -168,7 +173,7 @@ if __name__ == "__main__":
     #convert_avi_to_mp4(output_avi_path, output_mp4_path)
 
     # Load in model
-    model = tf.keras.models.load_model('fightnight_iter2.h5')
+    model = tf.keras.models.load_model('fightnight_iter1.h5')
 
     # Replace with the path to your video file
     input = r"C:\Users\2alex\Downloads\Climate protester run over by lorry in Germany.mp4"
@@ -181,8 +186,24 @@ if __name__ == "__main__":
     predictions = probability_model.predict(single_vid)
 
     # The result of pooling features
-    print(predictions)
+    print("EfficientNet Results:")
+    print(predictions[0][0], predictions[0][1])
 
     # here is what the computer is guessing the answer is
-    print(predictions[0][0])
-    print(numToVal(predictions[0][0]))
+    print("Non-violent") if predictions[0][0] > predictions[0][1] else print("Violent")
+    print("-------------------------------------------------------------------\n")
+
+    # Load the newly trained model checkpoint
+    new_checkpoint = 'epoch_10.pth'
+    cfg = 'config.py'
+
+    # Initialize the recognizer with the new checkpoint
+    new_model = init_recognizer(cfg, new_checkpoint, device='cuda:0')
+
+    # Specify the label map
+    #video = "nofight.mp4"
+    results = inference_recognizer(new_model, output_mp4_path)
+
+    print("MMAction Results:")
+    print(results.pred_score)
+    

@@ -13,7 +13,7 @@ cfg = 'config.py'
 new_model = init_recognizer(cfg, new_checkpoint, device='cuda:0')
 
 # Specify the label map
-video = "nofight.mp4"
+video = r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\dance.mp4"
 results = inference_recognizer(new_model, video)
 
-print(results)
+print(results.pred_score)
