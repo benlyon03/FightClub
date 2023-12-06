@@ -1,11 +1,85 @@
 import cv2
+import numpy as np
+import tensorflow as tf
+import random
 import time
+
+def format_frames(frame, output_size):
+    """
+      Pad and resize an image from a video.
+
+      Args:
+        frame: Image that needs to resized and padded.
+        output_size: Pixel size of the output frame image.
+
+      Return:
+        Formatted frame with padding of specified output size.
+    """
+    frame = tf.image.convert_image_dtype(frame, tf.float32)
+    frame = tf.image.resize_with_pad(frame, *output_size)
+    return frame
+
+
+def frames_from_video_file(fight_path, n_frames, output_size=(224, 224), frame_step=15):
+    """
+      Creates frames from each video file present for each category.
+
+      Args:
+        fight_path: File path to the video.
+        n_frames: Number of frames to be created per video file.
+        output_size: Pixel size of the output frame image.
+
+      Return:
+        An NumPy array of frames in the shape of (n_frames, height, width, channels).
+    """
+    # Read each video frame by frame
+    result = []
+    src = cv2.VideoCapture(str(fight_path))
+
+    video_length = src.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    need_length = 1 + (n_frames - 1) * frame_step
+
+    if need_length > video_length:
+        start = 0
+    else:
+        max_start = video_length - need_length
+        start = random.randint(0, max_start + 1)
+
+    src.set(cv2.CAP_PROP_POS_FRAMES, start)
+    # ret is a boolean indicating whether read was successful, frame is the image itself
+    ret, frame = src.read()
+    result.append(format_frames(frame, output_size))
+
+    for _ in range(n_frames - 1):
+        for _ in range(frame_step):
+            ret, frame = src.read()
+        if ret:
+            frame = format_frames(frame, output_size)
+            result.append(frame)
+        else:
+            result.append(np.zeros_like(result[0]))
+    src.release()
+    result = np.array(result)[..., [2, 1, 0]]
+
+    return result
+
+
+# NV = 0, V = 1
+def numToVal(num):
+    if num == 0:
+        return 'Non Violent Video'
+    elif num == 1:
+        return 'Violent Video'
+    return 'Some Very Wrong Is Happening'
+
 
 def record_video(output_path, duration):
     # Open a video capture object (0 represents the default camera)
     cap = cv2.VideoCapture(0)
 
     # Get the width and height of the frames
+    # Dataset dimensions: 244 x 244
     width = int(cap.get(3))
     height = int(cap.get(4))
 
@@ -53,6 +127,7 @@ def record_video(output_path, duration):
     # Destroy all OpenCV windows
     cv2.destroyAllWindows()
 
+
 def convert_avi_to_mp4(avi_path, mp4_path, fps=30):
     # Open the AVI file
     cap = cv2.VideoCapture(avi_path)
@@ -83,11 +158,31 @@ def convert_avi_to_mp4(avi_path, mp4_path, fps=30):
 if __name__ == "__main__":
     # Set the output video path and recording duration
     output_avi_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\liveVideo.avi'
-    output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\liveVideo.mp4'
+    output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\nofight.mp4'
     recording_duration = 4  # in seconds
 
     # Start recording
-    record_video(output_avi_path, recording_duration)
+    #record_video(output_avi_path, recording_duration)
 
     # Convert AVI to MP4
-    convert_avi_to_mp4(output_avi_path, output_mp4_path)
+    #convert_avi_to_mp4(output_avi_path, output_mp4_path)
+
+    # Load in model
+    model = tf.keras.models.load_model('fightnight_iter2.h5')
+
+    # Replace with the path to your video file
+    input = r"C:\Users\2alex\Downloads\Climate protester run over by lorry in Germany.mp4"
+
+    # Preprocess input
+    single_vid = frames_from_video_file(output_mp4_path, 8)
+    single_vid = tf.expand_dims(single_vid, axis=0)
+    probability_model = tf.keras.Sequential([model,
+                                            tf.keras.layers.Softmax()])
+    predictions = probability_model.predict(single_vid)
+
+    # The result of pooling features
+    print(predictions)
+
+    # here is what the computer is guessing the answer is
+    print(predictions[0][0])
+    print(numToVal(predictions[0][0]))
