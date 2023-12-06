@@ -74,11 +74,11 @@ def frames_from_video_file(fight_path, n_frames, output_size=(224, 224), frame_s
 
 # NV = 0, V = 1
 def numToVal(num):
-    if num == 0:
-        return 'Non Violent Video'
-    elif num == 1:
-        return 'Violent Video'
-    return 'Some Very Wrong Is Happening'
+    violent_percent = num[1]
+    if violent_percent > 0.14:
+        return "Violent Video"
+    else:
+        return "Non Violent"
 
 
 # predicting whether the fight video is violent
@@ -88,9 +88,9 @@ probability_model = tf.keras.Sequential([model,
                                          tf.keras.layers.Softmax()])
 predictions = probability_model.predict(single_vid)
 # here the result of pooling features
-print(predictions[0])
+print(predictions)
 # here is what the computer is guessing the answer is
-print(numToVal(np.argmax(predictions[0])))
+print(numToVal((predictions[0])))
 print()
 print()
 
@@ -101,4 +101,4 @@ probability_model = tf.keras.Sequential([model,
                                          tf.keras.layers.Softmax()])
 predictions = probability_model.predict(single_vid)
 print(predictions[0])
-print(numToVal(np.argmax(predictions[0])))
+print(numToVal(predictions[0]))
