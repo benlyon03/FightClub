@@ -1,3 +1,4 @@
+
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -8,6 +9,7 @@ sys.path.append('mmAction/mmaction2/')
 from mmaction.apis import init_recognizer, inference_recognizer
 import os
 import sklearn.metrics as metrics
+
 
 def format_frames(frame, output_size):
     """
@@ -163,47 +165,131 @@ def convert_avi_to_mp4(avi_path, mp4_path, fps=30):
 if __name__ == "__main__":
     # Set the output video path and recording duration
     output_avi_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\liveVideo.avi'
-    output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\dance.mp4'
+    output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\liveVideo.mp4'
     recording_duration = 4  # in seconds
 
+    inp = [r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\tacobellfight.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\dance.mp4", ]
+
+    for vid in inp:
     # Start recording
     #record_video(output_avi_path, recording_duration)
 
     # Convert AVI to MP4
     #convert_avi_to_mp4(output_avi_path, output_mp4_path)
-
+        play =  cv2.VideoCapture(vid)
     # Load in model
-    model = tf.keras.models.load_model('fightnight_iter1.h5')
+        while True:
+            # Read a frame from the video
+            ret, frame = play.read()
 
-    # Replace with the path to your video file
-    input = r"C:\Users\2alex\Downloads\Climate protester run over by lorry in Germany.mp4"
+            # Check if the video has ended
+            if not ret:
+                print("Video playback completed.")
+                break
+            # font 
+            font = cv2.FONT_HERSHEY_SIMPLEX 
+            
+            # org 
+            org = (50, 50) 
+            
+            # fontScale 
+            fontScale = 1
+            
+            # White color in BGR 
+            color = (255, 255, 255) 
+            
+            # Line thickness of 2 px 
+            thickness = 2
+            
+            # Using cv2.putText() method 
+            # frame = cv2.putText(frame, "Non-violent" if results.pred_score[0] > results.pred_score[1] else "Violent", org, font,  
+            #                 fontScale, color, thickness, cv2.LINE_AA)
+            # Display the frame (you can perform additional processing here)
+            cv2.imshow('Video', frame)
 
-    # Preprocess input
-    single_vid = frames_from_video_file(output_mp4_path, 8)
-    single_vid = tf.expand_dims(single_vid, axis=0)
-    probability_model = tf.keras.Sequential([model,
-                                            tf.keras.layers.Softmax()])
-    predictions = probability_model.predict(single_vid)
+            # Exit the loop if 'q' key is pressed
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+        play.release()
 
-    # The result of pooling features
-    print("EfficientNet Results:")
-    print(predictions[0][0], predictions[0][1])
+        model = tf.keras.models.load_model('fightnight_iter1.h5')
 
-    # here is what the computer is guessing the answer is
-    print("Non-violent") if predictions[0][0] > predictions[0][1] else print("Violent")
-    print("-------------------------------------------------------------------\n")
+        # Preprocess input
+        single_vid = frames_from_video_file(vid, 8)
+        single_vid = tf.expand_dims(single_vid, axis=0)
+        probability_model = tf.keras.Sequential([model,
+                                                tf.keras.layers.Softmax()])
+        predictions = probability_model.predict(single_vid)
 
-    # Load the newly trained model checkpoint
-    new_checkpoint = 'epoch_10.pth'
-    cfg = 'config.py'
+        # Load the newly trained model checkpoint
+        new_checkpoint = 'epoch_10.pth'
+        cfg = 'config.py'
 
-    # Initialize the recognizer with the new checkpoint
-    new_model = init_recognizer(cfg, new_checkpoint, device='cuda:0')
+        # Initialize the recognizer with the new checkpoint
+        new_model = init_recognizer(cfg, new_checkpoint, device='cuda:0')
 
-    # Specify the label map
-    #video = "nofight.mp4"
-    results = inference_recognizer(new_model, output_mp4_path)
+        # Specify the label map
+        #video = "nofight.mp4"
+        results = inference_recognizer(new_model, vid)
 
-    print("MMAction Results:")
-    print(results.pred_score)
-    
+        print("-------------------------------------------------------------------\n")
+        
+        # EfficientNet Results
+        print("EfficientNet Results:")
+        print("Predictions Scores: ", [predictions[0][0], predictions[0][1]])
+        print("Non-violent") if predictions[0][0] > predictions[0][1] else print("Violent")
+        print("-------------------------------------------------------------------\n")
+
+        # MMAction Results
+        print("MMAction Results:")
+        print("Prediction Scores: ", results.pred_score)
+        print("Non-violent") if results.pred_score[0] > results.pred_score[1] else print("Violent")
+        print("-------------------------------------------------------------------\n")
+        
+        #Create video player to play video
+        play =  cv2.VideoCapture(vid)
+
+        while True:
+            # Read a frame from the video
+            ret, frame = play.read()
+
+            # Check if the video has ended
+            if not ret:
+                print("Video playback completed.")
+                break
+            # font 
+            font = cv2.FONT_HERSHEY_SIMPLEX 
+            
+            # org 
+            org = (50, 50) 
+            
+            # fontScale 
+            fontScale = 1
+            
+            # White color in BGR 
+            color = (255, 255, 255) 
+            
+            # Line thickness of 2 px 
+            thickness = 2
+            
+            # Using cv2.putText() method 
+            frame = cv2.putText(frame, "Non-violent" if results.pred_score[0] > results.pred_score[1] else "Violent", org, font,  
+                            fontScale, color, thickness, cv2.LINE_AA)
+            # Display the frame (you can perform additional processing here)
+            cv2.imshow('Video', frame)
+
+            # Exit the loop if 'q' key is pressed
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+
+        # Release the VideoCapture object and close all windows
+        play.release()
+        cv2.destroyAllWindows()
+
+
+    # app = QApplication(sys.argv)
+    # player = VideoPlayer()
+    # player.setWindowTitle("Player")
+    # player.resize(600, 400)
+    # player.show()
+    # sys.exit(app.exec_())
