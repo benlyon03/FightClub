@@ -168,7 +168,7 @@ if __name__ == "__main__":
     output_mp4_path = r'C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\liveVideo.mp4'
     recording_duration = 4  # in seconds
 
-    inp = [r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\tacobellfight.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\dance.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\boxing.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\running.mp4"]
+    inp = [r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\tacobellfight.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\dance.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\boxing.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\running.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\yoga.mp4", r"C:\Users\2alex\OneDrive\Documents\GitHub\FightClub\brawl.mp4"]
 
     for vid in inp:
     # Start recording
