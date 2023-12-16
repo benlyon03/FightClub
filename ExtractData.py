@@ -103,9 +103,9 @@ def organize_data(main_dir, nv_dir, v_dir, split, nv_v_split):
   v_test = v_files[v_train_num:v_train_num + v_test_num]
   v_val = v_files[v_train_num + v_test_num:]
 
-  v_train = v_train[:int(len(nv_train) * nv_v_split[1])]
-  v_test = v_test[:int(len(nv_test) * nv_v_split[1])]
-  v_val = v_val[:int(len(nv_val) * nv_v_split[1])]
+  v_train = v_train[:len(nv_train)]
+  v_test = v_test[:len(nv_test) ]
+  v_val = v_val[:len(nv_val)]
   #Move the files to the correct folder
   for file in nv_train:
     shutil.move(os.path.join(nv_dir, file), os.path.join(main_dir, 'train', 'NV'))
